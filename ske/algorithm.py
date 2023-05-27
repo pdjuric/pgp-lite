@@ -8,14 +8,14 @@ from code import Code
 
 class SymmetricKeyAlgorithm(ABC):
     key_size_in_bytes: int = 16
-    map: dict[Code, SymmetricKeyAlgorithm] = {}
+    map: dict[Code: SymmetricKeyAlgorithm] = {}
 
     @staticmethod
     def get_by_code(code: Code) -> SymmetricKeyAlgorithm:
         try:
             return SymmetricKeyAlgorithm.map[code]
         except KeyError:
-            raise Exception("Unsupported symetric key algorithm")
+            raise Exception("Unsupported symmetric key algorithm")
 
     @staticmethod
     def generate_session_key() -> bytes:
