@@ -4,6 +4,7 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA1
 
+from code import Code
 from pke.algorithm import PublicKeyAlgorithm
 
 
@@ -29,7 +30,7 @@ class PrivateKey(ABC, SupportsBytes):
         return self.key_ID
 
 
-class PublicKey(ABC):
+class PublicKey(ABC, SupportsBytes):
 
     @abstractmethod
     def verify(self, data: bytes, signature: bytes) -> bool:
@@ -50,9 +51,9 @@ class PublicKey(ABC):
 
 class EncryptedPrivateKey:
 
-    def __init__(self, private_key: PrivateKey, pka: PublicKeyAlgorithm, passphrase: bytes):
+    def __init__(self, private_key: PrivateKey, pka_code: Code, passphrase: bytes):
         # should we pass Code or PublicKeyAlgorithm
-        self.pka = pka
+        self.pka_code = pka_code
 
         passphrase_hash = SHA1.new(passphrase).digest()
 
@@ -65,7 +66,7 @@ class EncryptedPrivateKey:
             passphrase_hash = SHA1.new(passphrase).digest()
             c = AES.new(passphrase_hash, AES.MODE_CBC, self.iv)
             b = unpad(c.decrypt(self.bytes), AES.block_size)
-            private_key, _ = self.pka.load_private_key(b)
+            private_key, _ = PublicKeyAlgorithm.get_by_code(self.pka_code).load_private_key(b)
             return private_key
         except (ValueError, KeyError):
             return None
