@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import Flag, auto
 
 
-class Code(Enum):
+class Code(Flag):
 
     def __new__(cls, *args, **kwds):
         value = len(cls.__members__) + 1
@@ -9,12 +9,14 @@ class Code(Enum):
         obj._value_ = value
         return obj
 
-    def __init__(self, name: str):
-        self.name = name
+    # def __init__(self, name: str):
+    # self.name = name
+    #
+    # def __str__(self):
+    # return self.name
 
-    def __str__(self):
-        return self.name
-
-    RSA = 'RSA'
-    DSA = 'DSA'
-    ElGamal = 'ElGamal'
+    RSA = auto()
+    DSA = auto()
+    ElGamal = auto()
+    AES128 = auto()
+    TripleDES = auto()
