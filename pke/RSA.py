@@ -3,6 +3,7 @@ from Crypto.PublicKey.RSA import RsaKey, generate, import_key
 from Crypto.Signature import pkcs1_15
 from Crypto.Cipher import PKCS1_OAEP
 
+from exceptions import DecryptionError
 from pke.algorithm import PublicKeyAlgorithm
 from pke.key import PublicKey, PrivateKey
 from code import Code
@@ -49,7 +50,10 @@ class RSAPrivateKey(PrivateKey):
         return pkcs1_15.new(self.impl).sign(h)
 
     def decrypt(self, ciphertext: bytes) -> bytes:
-        return PKCS1_OAEP.new(self.impl).decrypt(ciphertext)
+        try:
+            return PKCS1_OAEP.new(self.impl).decrypt(ciphertext)
+        except (ValueError, TypeError) as e:
+            raise DecryptionError(e)
 
     def __bytes__(self) -> bytes:
         return self.impl.export_key()

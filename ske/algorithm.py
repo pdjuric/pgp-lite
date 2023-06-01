@@ -4,7 +4,7 @@ import secrets
 from abc import ABC, abstractmethod
 
 from code import Code
-
+from exceptions import UnsupportedSymmetricKeyAlgorithm
 
 class SymmetricKeyAlgorithm(ABC):
     key_size_in_bytes: int = 16
@@ -15,7 +15,7 @@ class SymmetricKeyAlgorithm(ABC):
         try:
             return SymmetricKeyAlgorithm.map[code]
         except KeyError:
-            raise Exception("Unsupported symmetric key algorithm")
+            raise UnsupportedSymmetricKeyAlgorithm(code)
 
     @staticmethod
     def generate_session_key() -> bytes:

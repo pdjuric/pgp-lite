@@ -1,7 +1,7 @@
 from typing import TypeVar, Generic, Optional
 
 from code import Code
-
+from exceptions import UnknownKeyID
 
 RingEntry = TypeVar("RingEntry")
 
@@ -15,11 +15,11 @@ class Ring(Generic[RingEntry]):
     def get_all(self) -> list[RingEntry]:
         return list(self._index_by_key.values())
 
-    def get_by_key_ID(self, key_ID: bytes) -> Optional[RingEntry]:
+    def get_by_key_ID(self, key_ID: bytes) -> RingEntry:
         try:
             return self._index_by_key[key_ID]
         except KeyError:
-            return None
+            raise UnknownKeyID(key_ID)
 
     def get_by_pka_code(self, pka_code: Code) -> list[RingEntry]:
         try:

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import SupportsBytes, Optional
+from typing import SupportsBytes
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA1
 
 from code import Code
+from exceptions import PrivateKeyDecryptionError
 from pke.algorithm import PublicKeyAlgorithm
 
 
@@ -61,12 +62,12 @@ class EncryptedPrivateKey:
         self.iv = c.iv
         self.bytes = c.encrypt(pad(bytes(private_key), AES.block_size))
 
-    def decrypt(self, passphrase: bytes) -> Optional[PrivateKey]:
+    def decrypt(self, passphrase: bytes) -> PrivateKey:
         try:
             passphrase_hash = SHA1.new(passphrase).digest()
             c = AES.new(passphrase_hash, AES.MODE_CBC, self.iv)
             b = unpad(c.decrypt(self.bytes), AES.block_size)
             private_key, _ = PublicKeyAlgorithm.get_by_code(self.pka_code).load_private_key(b)
             return private_key
-        except (ValueError, KeyError):
-            return None
+        except (ValueError, KeyError) as e:
+            raise PrivateKeyDecryptionError(e)
