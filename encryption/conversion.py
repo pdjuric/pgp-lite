@@ -9,7 +9,7 @@ from message import Message
 class Conversion(Step):
 
     def execute_step(self, message: Message, algorithm_code: Optional[Code] = None):
-        converted_message = base64.b64decode(message.get_bytes())
+        converted_message = base64.b64encode(message.get_bytes())
         message.set_bytes(converted_message)
 
     def get_code(self) -> Code:
