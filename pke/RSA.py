@@ -6,21 +6,19 @@ from Crypto.Cipher import PKCS1_OAEP
 from exceptions import DecryptionError
 from pke.algorithm import PublicKeyAlgorithm
 from pke.key import PublicKey, PrivateKey
-from code import Code
+from codes import Code
 
 
 class RSAAlgorithm(PublicKeyAlgorithm):
 
     def generate_keys(self, key_size: int) -> (PrivateKey, PublicKey):
-        # todo check possible key sizes
-
         private_impl = generate(key_size)
         public_impl = private_impl.public_key()
 
         public = RSAPublicKey(public_impl)
         private = RSAPrivateKey(private_impl, public.get_key_ID())
 
-        return public, private
+        return private, public
 
     def load_private_key(self, data: bytes) -> (PrivateKey, PublicKey):
         private_impl = import_key(data)
@@ -29,7 +27,7 @@ class RSAAlgorithm(PublicKeyAlgorithm):
         public = RSAPublicKey(public_impl)
         private = RSAPrivateKey(private_impl, public.get_key_ID())
 
-        return public, private
+        return private, public
 
     def load_public_key(self, data: bytes) -> PublicKey:
         public_impl = import_key(data)

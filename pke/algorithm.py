@@ -1,7 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-from code import Code
+from codes import Code
 
 
 class PublicKeyAlgorithm(ABC):

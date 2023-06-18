@@ -1,13 +1,13 @@
 from typing import Optional
 
-from code import Code
+from codes import Code
 from .step import Step
 from message import Message
 from ring import PrivateRing
 from ske import SymmetricKeyAlgorithm
 
 
-class Decryption(Step):
+class DecryptionStep(Step):
 
     def execute_step(self, message: Message, algorithm_code: Optional[Code] = None):
         public_key_ID = message.get_bytes(8)

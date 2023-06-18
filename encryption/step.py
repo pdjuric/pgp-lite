@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from code import Code
+from codes import Code
 from message import Message
 
 class Step(ABC):

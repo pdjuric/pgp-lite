@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from code import Code
+from codes import Code
 from encryption.step import Step
 from message import Message
 

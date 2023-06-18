@@ -1,7 +1,7 @@
-from .conversion import Conversion
-from .decompression import Decompression
-from .decryption import Decryption
-from .verification import Verification
+from .conversion_step import Conversion
+from .decompression_step import Decompression
+from .decryption_step import Decryption
+from .verification_step import Verification
 from message import Message
 
 

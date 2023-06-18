@@ -4,7 +4,7 @@ from Crypto.Util.Padding import pad, unpad
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA1
 
-from code import Code
+from codes import Code
 from exceptions import PrivateKeyDecryptionError
 from pke.algorithm import PublicKeyAlgorithm
 

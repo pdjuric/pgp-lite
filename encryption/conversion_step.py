@@ -1,7 +1,7 @@
 import base64
 
 from typing import Optional
-from code import Code
+from codes import Code
 from .step import Step
 from message import Message
 

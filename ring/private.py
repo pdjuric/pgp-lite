@@ -17,3 +17,6 @@ class PrivateRingEntry:
 
     def get_pka_code(self) -> Code:
         return self._encrypted_private_key.pka_code
+
+    def export(self):
+        pass

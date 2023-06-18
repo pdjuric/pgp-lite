@@ -3,7 +3,7 @@ from __future__ import annotations
 import secrets
 from abc import ABC, abstractmethod
 
-from code import Code
+from codes import Code
 from exceptions import UnsupportedSymmetricKeyAlgorithm
 
 class SymmetricKeyAlgorithm(ABC):

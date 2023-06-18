@@ -1,6 +1,6 @@
 from Crypto.Cipher import DES3
 
-from code import Code
+from codes import Code
 from ske.algorithm import SymmetricKeyAlgorithm
 
 

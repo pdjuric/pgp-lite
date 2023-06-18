@@ -1,6 +1,6 @@
 from datetime import datetime
 from Crypto.Hash import SHA1
-from code import Code
+from codes import Code
 from encryption.step import Step
 from message import Message
 from pke import PrivateKey

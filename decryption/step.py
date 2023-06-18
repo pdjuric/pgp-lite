@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional
 import logging
 
-from code import Code
+from codes import Code
 from message import Message
 
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-
+from typing import Optional
 
 from config import CONST_X, CONST_Y
 from pke.key import *

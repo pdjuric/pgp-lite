@@ -1,6 +1,6 @@
 from Crypto.Cipher import AES
 
-from code import Code
+from codes import Code
 from ske.algorithm import SymmetricKeyAlgorithm
 
 

@@ -4,7 +4,7 @@ from Crypto.Signature import DSS
 
 from pke.algorithm import PublicKeyAlgorithm
 from pke.key import PublicKey, PrivateKey
-from code import Code
+from codes import Code
 
 
 class DSAAlgorithm(PublicKeyAlgorithm):
@@ -16,7 +16,7 @@ class DSAAlgorithm(PublicKeyAlgorithm):
         public = DSAPublicKey(public_impl)
         private = DSAPrivateKey(private_impl, public.get_key_ID())
 
-        return public, private
+        return private, public
 
     def load_private_key(self, data: bytes) -> (PrivateKey, PublicKey):
         private_impl = import_key(data)
@@ -25,7 +25,7 @@ class DSAAlgorithm(PublicKeyAlgorithm):
         public = DSAPublicKey(public_impl)
         private = DSAPrivateKey(private_impl, public.get_key_ID())
 
-        return public, private
+        return private, public
 
     def load_public_key(self, data: bytes) -> PublicKey:
         public_impl = import_key(data)
@@ -69,7 +69,7 @@ class DSAPublicKey(PublicKey):
         raise Exception("Unsupported operation: DSAPublicKey.encrypt")
 
     def get_key_ID(self) -> bytes:
-        return (self.impl.n % (1 << 64)).to_bytes(8, "big")
+        return (self.impl._key['p'] % (1 << 64)).to_bytes(8, "big")
 
     def get_signature_size(self) -> int:
         size = self.impl._key['p'].size_in_bytes()

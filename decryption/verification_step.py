@@ -3,14 +3,14 @@ from typing import Optional
 
 from Crypto.Hash import SHA1
 
-from code import Code
+from codes import Code
 from .step import Step
 from exceptions import HashStartMissmatch, VerificationFailed
 from message import Message
 from ring import PublicRing
 
 
-class Verification(Step):
+class VerificationStep(Step):
 
     def execute_step(self, message: Message, algorithm_code: Optional[Code] = None):
         timestamp = message.get_bytes(4)
