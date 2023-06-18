@@ -33,6 +33,20 @@ class PublicRingEntry:
     def get_key_ID(self) -> bytes:
         return self.public_key.get_key_ID()
 
+    def export(self, filename):
+        res = bytearray()
+
+        res.extend(bytes("-----BEGIN USER INFO-----\n", 'utf-8'))
+        res.extend(bytes(self.user, 'utf-8'))
+        res.extend(bytes("\n-----END USER INFO-----\n", 'utf-8'))
+
+        res.extend(bytes(self.public_key))
+
+        with open(filename, 'wb') as file:
+            file.write(bytes(res))
+
+    def get_pka_code(self) -> Code:
+        return self.pka_code
 
 class User:
 
@@ -67,14 +81,14 @@ class Trust(Enum):
         return obj
 
     def __init__(self, name: str, value: int):
-        self.name = name
-        self.value = value
+        self._name_ = name
+        self._value_ = value
 
     def __int__(self):
-        return self.value
+        return self._value_
 
     def __str__(self):
-        return self.name
+        return self._name_
 
     UNKNOWN = 'unknown', 0
     NO_TRUST = 'untrusted', 0

@@ -1,3 +1,4 @@
+from builtins import type
 from typing import TypeVar, Generic, Optional
 
 from codes import Code
@@ -39,6 +40,3 @@ class Ring(Generic[RingEntry]):
         bucket = self.get_by_pka_code(entry.get_pka_code())
         bucket.remove(entry)
         self._index_by_pka_code[entry.get_pka_code()] = bucket
-
-    def importEntry(self, type):
-        pass

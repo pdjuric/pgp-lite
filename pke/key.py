@@ -58,14 +58,14 @@ class EncryptedPrivateKey:
 
         passphrase_hash = SHA1.new(passphrase).digest()
 
-        c = AES.new(passphrase_hash, AES.MODE_CBC)
+        c = AES.new(passphrase_hash[:16], AES.MODE_CBC)
         self.iv = c.iv
         self.bytes = c.encrypt(pad(bytes(private_key), AES.block_size))
 
     def decrypt(self, passphrase: bytes) -> PrivateKey:
         try:
             passphrase_hash = SHA1.new(passphrase).digest()
-            c = AES.new(passphrase_hash, AES.MODE_CBC, self.iv)
+            c = AES.new(passphrase_hash[:16], AES.MODE_CBC, self.iv)
             b = unpad(c.decrypt(self.bytes), AES.block_size)
             private_key, _ = PublicKeyAlgorithm.get_by_code(self.pka_code).load_private_key(b)
             return private_key
