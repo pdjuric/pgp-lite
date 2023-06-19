@@ -4,7 +4,7 @@ from codes import Code
 from ske.algorithm import SymmetricKeyAlgorithm
 
 
-class TripleDes(SymmetricKeyAlgorithm):
+class TripleDES(SymmetricKeyAlgorithm):
     def encrypt(self, key: bytes, data: bytes) -> bytes:
         try:
             key = DES3.adjust_key_parity(key)

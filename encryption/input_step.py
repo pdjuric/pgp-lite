@@ -7,12 +7,12 @@ from message import Message
 
 class InputStep(Step):
 
-    def __init__(self, text):
+    def __init__(self, text: bytes):
         self.text = text
 
     def execute_step(self, message: Message):
         timestamp = int(datetime.now().timestamp())
-        message.append(timestamp)
+        message.append(timestamp.to_bytes(length=4, byteorder='big'))
         message.append(self.text)
 
     def get_code(self) -> Code:

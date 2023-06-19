@@ -11,8 +11,13 @@ class Message:
         self.timestamp = None
 
     def __init__(self, msg: str, timestamp: Optional[int] = None):
-        self.__init__(bytes(msg, 'utf-8'))
+        payload=bytes(msg, 'utf-8')
         self.timestamp = timestamp
+        self.set_bytes(payload)
+        self.cursor = 0
+        self.data: [bytes] = [payload]
+        self.dirty_bit = False
+        self.timestamp = None
 
     def __set_dirty_bit(self):
         self.dirty_bit = True

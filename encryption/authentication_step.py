@@ -14,7 +14,7 @@ class AuthenticationStep(Step):
     def execute_step(self, message: Message):
         timestamp = int(datetime.now().timestamp())
         hash = SHA1.new(message.get_bytes(0))
-        signature = self.private_key.sign(hash)
+        signature = self.private_key.sign(hash.digest())
 
         message.prepend(signature)
         message.prepend(hash.digest()[:2])
