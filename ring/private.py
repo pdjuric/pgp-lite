@@ -30,3 +30,15 @@ class PrivateRingEntry:
 
         with open(filename, 'wb') as file:
          file.write(bytes(res))
+
+    def export_public(self, filename: str):
+        res = bytearray()
+
+        res.extend(bytes("-----BEGIN USER INFO-----\n", 'utf-8'))
+        res.extend(bytes(self.user, 'utf-8'))
+        res.extend(bytes("\n-----END USER INFO-----\n", 'utf-8'))
+
+        res.extend(bytes(self.public_key))
+
+        with open(filename, 'wb') as file:
+            file.write(bytes(res))

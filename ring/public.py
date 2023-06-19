@@ -28,7 +28,7 @@ class PublicRingEntry:
         return self._signatures
 
     def get_key_legitimacy(self) -> bool:
-        return sum([int(user.get_trust()) for user in self._signatures]) >= Trust.get_minimal_trust()
+        return sum([int(user.trust) for user in self._signatures]) >= Trust.get_minimal_trust()
 
     def get_key_ID(self) -> bytes:
         return self.public_key.get_key_ID()

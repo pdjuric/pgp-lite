@@ -1,3 +1,5 @@
+from ring.public import User
+
 
 def create_rings():
     from .private import PrivateRingEntry
@@ -21,8 +23,8 @@ def import_private_entry(filename: str, passphrase: bytes):
         imported_key = file.read()
         print(imported_key)
         import re
-        patern = r"-----BEGIN USER INFO-----\n([^-]*)\n-----END USER INFO-----\n(.*)$"
-        m = re.search(patern, imported_key.decode(), re.DOTALL)
+        pattern = r"-----BEGIN USER INFO-----\n([^\n]*)\n-----END USER INFO-----\n(.*)$"
+        m = re.search(pattern, imported_key.decode(), re.DOTALL)
         if not m:
             raise ValueError("Not a valid PEM pre boundary")
         user = m.group(1)
@@ -35,7 +37,7 @@ def import_private_entry(filename: str, passphrase: bytes):
         keyType = m.group(1)
 
         if not keyType.count('PRIVATE'):
-            raise Exception("Not a valid key type.")
+            raise Exception("Not a private key.")
 
         if keyType.count('ELGAMAL'):
             algorithm = ElGamalAlgorithm()
@@ -76,15 +78,20 @@ def import_public_entry(filename: str):
 
         if keyType.count('ELGAMAL'):
             algorithm = ElGamalAlgorithm()
+            key = bytes(key, 'utf-8')
         elif keyType.count('RSA'):
             algorithm = RSAAlgorithm()
+            key = key.replace('RSA ', '')
         else:
             algorithm = DSAAlgorithm()
 
 
-        if keyType.count('PRIMARY'):
-            _, public_key = algorithm.load_private_key(key)
+        if keyType.count('PRIVATE'):
+            raise ValueError("Not a public key!")
         else:
             public_key = algorithm.load_public_key(key)
-        public_key_entry = PublicRingEntry(user, public_key, int(datetime.now().timestamp()), algorithm.get_code())
+
+
+        public_key_entry = PublicRingEntry(User.get(user), public_key, int(datetime.now().timestamp()), algorithm.get_code())
         PublicRing.add(public_key_entry)
+        return User.get(user), public_key.get_key_ID()
