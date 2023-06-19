@@ -17,10 +17,9 @@ class EncryptionStep(Step):
         session_key = SymmetricKeyAlgorithm.generate_session_key()
         encrypted_data = self.algorithm.encrypt(session_key, message.get_bytes(0))
         encrypted_session_key = self.public_key.encrypt(session_key)
-
         message.set_bytes(encrypted_data)
         message.prepend(encrypted_session_key)
         message.prepend(self.public_key.get_key_ID())
 
     def get_code(self) -> Code:
-        return Code.Encrypted
+        return Code.Encrypted | self.algorithm.get_code()

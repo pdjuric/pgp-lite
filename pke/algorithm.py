@@ -17,7 +17,7 @@ class PublicKeyAlgorithm(ABC):
         elif code == Code.DSA:
             return DSAAlgorithm()
         elif code == Code.ElGamal:
-            return ElGamalAlgorithm
+            return ElGamalAlgorithm()
         else:
             raise ValueError('Wrong public key algorithm code')
 

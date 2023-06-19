@@ -32,7 +32,10 @@ def modinv(a, m):
 class ElGamalAlgorithm(PublicKeyAlgorithm):
     def remove_key_boundary(self, data: bytes) -> bytes:
         r = re.compile(r"-----BEGIN([^-]*)-----\n([^-]*)\n-----END([^-]*)-----")
-        m = r.match(data.decode())
+        try:
+            m = r.match(data.decode())
+        except AttributeError:
+            m = r.match(data)
         if not m:
             raise ValueError("Not a valid PEM pre boundary")
         marker = m.group(2)
@@ -100,6 +103,9 @@ class ElGamalPrivateKey(PrivateKey):
 
         return unpad(plaintext, block_size)
 
+    def get_alorithm_code(self) -> Code:
+        return Code.ElGamal
+
     def __bytes__(self) -> bytes:
         comps = [getattr(self.impl, comp) for comp in ('p', 'g', 'y', 'x')]
         arr = bytearray()
@@ -143,10 +149,12 @@ class ElGamalPublicKey(PublicKey):
 
     def get_key_ID(self) -> bytes:
         return (int(self.impl.y) % (1 << 64)).to_bytes(8, "big")
-        # int(key.y).to_bytes(key.y.size_in_bytes(), "big")[-8:]
 
     def get_signature_size(self) -> int:
-        raise Exception("Unsupported operation: ElGamalPublicKey.get_signature_size")
+        return self.impl.p.size_in_bytes() * 2
+
+    def get_alorithm_code(self) -> Code:
+        return Code.ElGamal
 
     def __bytes__(self) -> bytes:
         comps = [getattr(self.impl, comp) for comp in ('p', 'g', 'y')]
@@ -159,8 +167,8 @@ class ElGamalPublicKey(PublicKey):
             arr.extend(component)
 
         res = bytearray()
-        res.extend(bytes("-----BEGIN ELGAMAL PRIVATE KEY-----\n", 'utf-8'))
+        res.extend(bytes("-----BEGIN ELGAMAL KEY-----\n", 'utf-8'))
         res.extend(hexlify(bytes(arr)))
-        res.extend(bytes("\n-----END ELGAMAL PRIVATE KEY-----", 'utf-8'))
+        res.extend(bytes("\n-----END ELGAMAL KEY-----", 'utf-8'))
 
         return bytes(res)

@@ -3,10 +3,12 @@ from __future__ import annotations
 from enum import Enum
 
 
-class Code(Enum):
+class Code:
+    def __init__(self, value:int):
+        self.value = value
 
     def __contains__(self, code: Code) -> bool:
-        return self.value & code.value == code.value
+        return self.value & code.value == self.value
 
     def __and__(self, other: Code) -> Code:
         return Code(self.value & other.value)
@@ -17,16 +19,29 @@ class Code(Enum):
     def __xor__(self, other: Code) -> Code:
         return Code(self.value ^ other.value)
 
+    RSA = None
+    DSA = None
+    ElGamal = None
 
-    RSA = 0x01
-    DSA = 0x02
-    ElGamal = 0x04
+    AES128 = None
+    TripleDES = None
 
-    AES128 = 0x01
-    TripleDES = 0x02
+    Plaintext = None
+    Signed = None
+    Compressed = None
+    Encrypted = None
+    Radix64Converted = None
 
-    Plaintext = 0x00
-    Signed = 0x10
-    Compressed = 0x20
-    Encrypted = 0x40
-    Radix64Converted = 0x80
+
+Code.RSA = Code(0x00)
+Code.DSA = Code(0x01)
+Code.ElGamal = Code(0x02)
+
+Code.AES128 = Code(0x04)
+Code.TripleDES = Code(0x08)
+
+Code.Plaintext = Code(0x08)
+Code.Signed = Code(0x10)
+Code.Compressed = Code(0x20)
+Code.Encrypted = Code(0x40)
+Code.Radix64Converted = Code(0x80)

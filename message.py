@@ -3,7 +3,7 @@ from typing import Optional
 
 class Message:
 
-    def __init__(self, payload: bytes):
+    def __init__(self, payload: bytearray, op1:str="", op2:str=""):
         self.set_bytes(payload)
         self.cursor = 0
         self.data: [bytes] = [payload]

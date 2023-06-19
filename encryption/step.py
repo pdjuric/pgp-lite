@@ -8,7 +8,7 @@ class Step(ABC):
     def execute(self, message:Message):
         self.execute_step(message)
         code = self.get_code()
-        message.prepend(code.value.to_bytes(length=4, byteorder='big'))
+        message.prepend(code.value.to_bytes(length=1, byteorder='big'))
 
     @abstractmethod
     def execute_step(self, message: Message):

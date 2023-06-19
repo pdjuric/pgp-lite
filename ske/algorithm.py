@@ -8,18 +8,17 @@ from exceptions import UnsupportedSymmetricKeyAlgorithm
 
 class SymmetricKeyAlgorithm(ABC):
     key_size_in_bytes: int = 16
-    map: dict[Code: SymmetricKeyAlgorithm] = {}
+    map: dict[int: SymmetricKeyAlgorithm] = {}
 
     @staticmethod
     def get_by_code(code: Code) -> SymmetricKeyAlgorithm:
         try:
-            return SymmetricKeyAlgorithm.map[code]
+            return SymmetricKeyAlgorithm.map[code.value]
         except KeyError:
             raise UnsupportedSymmetricKeyAlgorithm(code)
 
     @staticmethod
     def generate_session_key() -> bytes:
-        # todo
         return secrets.token_bytes(SymmetricKeyAlgorithm.key_size_in_bytes)
 
     @abstractmethod

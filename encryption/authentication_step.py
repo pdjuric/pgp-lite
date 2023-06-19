@@ -13,8 +13,9 @@ class AuthenticationStep(Step):
 
     def execute_step(self, message: Message):
         timestamp = int(datetime.now().timestamp())
-        hash = SHA1.new(message.get_bytes(0))
-        signature = self.private_key.sign(hash.digest())
+        msg = message.get_bytes(0)
+        hash = SHA1.new(msg)
+        signature = self.private_key.sign(msg)
 
         message.prepend(signature)
         message.prepend(hash.digest()[:2])
@@ -22,4 +23,4 @@ class AuthenticationStep(Step):
         message.prepend(timestamp.to_bytes(length=4, byteorder='big'))
 
     def get_code(self) -> Code:
-        return Code.Signed
+        return Code.Signed | self.private_key.get_alorithm_code()

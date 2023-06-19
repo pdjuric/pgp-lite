@@ -30,6 +30,10 @@ class PrivateKey(ABC, SupportsBytes):
     def get_key_ID(self) -> bytes:
         return self.key_ID
 
+    @abstractmethod
+    def get_alorithm_code(self) -> Code:
+        pass
+
 
 class PublicKey(ABC, SupportsBytes):
 
@@ -49,11 +53,14 @@ class PublicKey(ABC, SupportsBytes):
     def get_signature_size(self) -> int:
         pass
 
+    @abstractmethod
+    def get_alorithm_code(self) -> Code:
+        pass
+
 
 class EncryptedPrivateKey:
 
     def __init__(self, private_key: PrivateKey, pka_code: Code, passphrase: bytes):
-        # should we pass Code or PublicKeyAlgorithm
         self.pka_code = pka_code
 
         passphrase_hash = SHA1.new(passphrase).digest()
@@ -66,7 +73,8 @@ class EncryptedPrivateKey:
         try:
             passphrase_hash = SHA1.new(passphrase).digest()
             c = AES.new(passphrase_hash[:16], AES.MODE_CBC, self.iv)
-            b = unpad(c.decrypt(self.bytes), AES.block_size)
+            x = c.decrypt(self.bytes)
+            b = unpad(x, AES.block_size)
             private_key, _ = PublicKeyAlgorithm.get_by_code(self.pka_code).load_private_key(b)
             return private_key
         except (ValueError, KeyError) as e:

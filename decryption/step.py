@@ -7,8 +7,7 @@ from message import Message
 
 
 class Step(ABC):
-
-    logger: logging.Logger = None
+    logger: logging.Logger = logging.getLogger()
 
     @abstractmethod
     def execute_step(self, message: Message, algorithm_code: Optional[Code] = None):
@@ -25,14 +24,15 @@ class Step(ABC):
         code_from_received_msg = Code(int.from_bytes(code_byte_from_received_msg, 'big'))
 
         if code_from_received_msg in self.get_code():
+            if code_from_received_msg.value == self.get_code().value:
+                self.execute_step(message, None)
+                return True
             try:
                 self.execute_step(message, code_from_received_msg ^ self.get_code())
             except Exception as e:
-                Step.logger.error("IN {} - {}".format(self.__class__.__name__).format(e))
+                Step.logger.error("IN {} - {}".format(self.__class__.__name__, e))
                 return False
         else:
             message.move_cursor(-1)
 
         return True
-
-

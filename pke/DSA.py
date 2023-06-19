@@ -2,6 +2,7 @@ from Crypto.Hash import SHA1
 from Crypto.PublicKey.DSA import DsaKey, generate, import_key
 from Crypto.Signature import DSS
 
+from pke.RSA import RSAAlgorithm
 from pke.algorithm import PublicKeyAlgorithm
 from pke.key import PublicKey, PrivateKey
 from codes import Code
@@ -48,6 +49,9 @@ class DSAPrivateKey(PrivateKey):
     def decrypt(self, ciphertext: bytes) -> bytes:
         raise Exception("Unsupported operation: DSAPrivateKey.decrypt")
 
+    def get_alorithm_code(self) -> Code:
+        return Code.DSA
+
     def __bytes__(self) -> bytes:
         return self.impl.export_key()
 
@@ -79,6 +83,9 @@ class DSAPublicKey(PublicKey):
             return 56
         else:
             raise Exception("DSA Key size is not 128B nor 256B!")
+
+    def get_alorithm_code(self) -> Code:
+        return Code.DSA
 
     def __bytes__(self) -> bytes:
         return self.impl.export_key()

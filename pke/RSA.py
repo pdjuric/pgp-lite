@@ -9,6 +9,9 @@ from pke.key import PublicKey, PrivateKey
 from codes import Code
 
 
+saved_hash = None
+saved_signature = None
+
 class RSAAlgorithm(PublicKeyAlgorithm):
 
     def generate_keys(self, key_size: int) -> (PrivateKey, PublicKey):
@@ -45,13 +48,17 @@ class RSAPrivateKey(PrivateKey):
 
     def sign(self, data: bytes) -> bytes:
         h = SHA1.new(data)      # produces 20-byte hash of the message
-        return pkcs1_15.new(self.impl).sign(h)
+        saved_signature = pkcs1_15.new(self.impl).sign(h)
+        return saved_signature
 
     def decrypt(self, ciphertext: bytes) -> bytes:
         try:
             return PKCS1_OAEP.new(self.impl).decrypt(ciphertext)
         except (ValueError, TypeError) as e:
             raise DecryptionError(e)
+
+    def get_alorithm_code(self) -> Code:
+        return Code.RSA
 
     def __bytes__(self) -> bytes:
         return self.impl.export_key()
@@ -64,10 +71,11 @@ class RSAPublicKey(PublicKey):
 
     def verify(self, data: bytes, signature: bytes) -> bool:
         h = SHA1.new(data)
+
         try:
             pkcs1_15.new(self.impl).verify(h, signature)
             return True
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
             return False
 
     def encrypt(self, data: bytes) -> bytes:
@@ -79,5 +87,9 @@ class RSAPublicKey(PublicKey):
     def get_signature_size(self) -> int:
         return self.impl.size_in_bytes()
 
+    def get_alorithm_code(self) -> Code:
+        return Code.RSA
+
     def __bytes__(self) -> bytes:
-        return self.impl.export_key()
+        exported = self.impl.export_key()
+        return exported[:11] + bytes("RSA ", 'utf-8') + exported[11:]

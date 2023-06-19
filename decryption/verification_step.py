@@ -17,31 +17,30 @@ class VerificationStep(Step):
         public_key_ID = message.get_bytes(8)
         hash_start = message.get_bytes(2)
 
-        public_key_entry = PublicRing.get_public_key_entry(public_key_ID)
-        Step.logger.info("Public key found - using key {}.".format(public_key_ID.hex()))
-
-
-        # todo: make sure to use int(datetime.now().timestamp()) when generating timestamp
+        public_key_entry = PublicRing.get_by_key_ID(public_key_ID)
+        Step.logger.info("Public key found - key id = {}.".format(public_key_ID.hex()))
 
         info_str = 'User: {}. Signing time: {}.'\
-            .format(public_key_entry.user.ID)\
-            .format(datetime.fromtimestamp(int.from_bytes(timestamp, 'big')))
+            .format(public_key_entry.user, datetime.fromtimestamp(int.from_bytes(timestamp, 'big')))
 
         if public_key_entry.get_key_legitimacy():
             Step.logger.info("{} Key legitimate!".format(info_str))
         else:
-            Step.logger.error("{} Key not legitimate!".format(info_str))
+            Step.logger.warning("{} Key not legitimate!".format(info_str))
 
-        public_key = public_key_entry.get_public_key()
+        public_key = public_key_entry.public_key
 
         signature = message.get_bytes(public_key.get_signature_size())
-        message_hash = SHA1.new(message.get_remaining_bytes())      #todo ??
+        msg = message.get_remaining_bytes()
+        message_hash = SHA1.new(msg)
 
-        if message_hash.digest() != hash_start:
+        if message_hash.digest()[:2] != hash_start:
             raise HashStartMissmatch(hash_start, message_hash.digest())
 
-        if not public_key.verify(message.get_remaining_bytes(), signature):
+        if not public_key.verify(msg, signature):
             raise VerificationFailed(public_key_ID)
+
+        message.set_bytes(msg)
 
         Step.logger.info("Message verified.")
 
