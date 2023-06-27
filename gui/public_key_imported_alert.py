@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QDialog, QButtonGroup
 
-from gui.generate_key import back
 from ring.public import Trust
 
 
@@ -57,8 +56,7 @@ class UI_PublicKeyImportedAlert(QDialog):
                     self.callback(Trust.PARTIAL_TRUST)
                 else:
                     self.callback(Trust.NO_TRUST)
-            back(self)
-
+            self.hide()
 
         self.buttonBox.accepted.connect(lambda: r())
 

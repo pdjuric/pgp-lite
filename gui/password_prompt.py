@@ -16,8 +16,9 @@ class UI_PasswordPrompt(QDialog):
         self.buttonBox.setGeometry(QtCore.QRect(90, 120, 151, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.label = QtWidgets.QLabel('Enter password for key ' + self.key_text, self)
-        self.label.setGeometry(QtCore.QRect(50, 20, 241, 41))
+        self.label = QtWidgets.QLabel('Enter password for ' + self.key_text, self)
+        self.label.setGeometry(QtCore.QRect(40, 20, 261, 41))
+        self.label.setWordWrap(True)
         self.lineEdit = QtWidgets.QLineEdit(self)
         self.lineEdit.setGeometry(QtCore.QRect(50, 80, 241, 21))
 
@@ -29,3 +30,8 @@ class UI_PasswordPrompt(QDialog):
         self.buttonBox.rejected.connect(lambda: self.close())
         QtCore.QMetaObject.connectSlotsByName(self)
 
+
+def enter_password(func):
+    from custom_logger import log_handler
+    p = UI_PasswordPrompt(log_handler.widget, 'key', lambda x: func(x))
+    p.exec_()

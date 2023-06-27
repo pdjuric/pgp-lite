@@ -1,7 +1,7 @@
 import random
 import re
 
-from Crypto.Math._IntegerCustom import IntegerCustom
+from Crypto.Math._IntegerGMP import IntegerGMP
 from Crypto.PublicKey.ElGamal import ElGamalKey, generate, construct
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
@@ -11,15 +11,18 @@ from pke.key import PublicKey, PrivateKey
 from codes import Code
 from binascii import hexlify, unhexlify
 
-IntegerCustomZero = IntegerCustom(0)
-IntegerCustomOne = IntegerCustom(1)
+IntegerCustomZero = IntegerGMP(0)
+IntegerCustomOne = IntegerGMP(1)
 
-def egcd(a, b) -> (IntegerCustom, IntegerCustom, IntegerCustom):
-    if a == IntegerCustomZero:
-        return (b, IntegerCustomZero, IntegerCustomOne)
-    else:
-        g, y, x = egcd(b % a, a)
-        return (g, x - (b // a) * y, y)
+
+def egcd(a, b) -> (IntegerGMP, IntegerGMP, IntegerGMP):
+    x, y, u, v = IntegerCustomZero, IntegerCustomOne, IntegerCustomOne, IntegerCustomZero
+    while a != IntegerCustomZero:
+        q, r = b // a, b % a
+        m, n = x - u * q, y - v * q
+        b, a, x, y, u, v = a, r, u, v, m, n
+    return b, x, y
+
 
 def modinv(a, m):
     g, x, y = egcd(a, m)
@@ -29,18 +32,17 @@ def modinv(a, m):
         return x % m
 
 
-class ElGamalAlgorithm(PublicKeyAlgorithm):
-    def remove_key_boundary(self, data: bytes) -> bytes:
-        r = re.compile(r"-----BEGIN([^-]*)-----\n([^-]*)\n-----END([^-]*)-----")
-        try:
-            m = r.match(data.decode())
-        except AttributeError:
-            m = r.match(data)
-        if not m:
-            raise ValueError("Not a valid PEM pre boundary")
-        marker = m.group(2)
+def remove_key_boundary(data: bytes) -> bytes:
+    r = re.compile(r"-----BEGIN([^-]*)-----\n([^\n]*)\n-----END([^-]*)-----")
+    m = r.match(data.decode())
+    if not m:
+        raise ValueError("Not a valid PEM pre boundary")
+    marker = m.group(2)
 
-        return unhexlify(bytes(marker, 'utf-8'))
+    return unhexlify(bytes(marker, 'utf-8'))
+
+
+class ElGamalAlgorithm(PublicKeyAlgorithm):
 
     def generate_keys(self, key_size: int) -> (PrivateKey, PublicKey):
         private_impl = generate(key_size, get_random_bytes)
@@ -50,7 +52,7 @@ class ElGamalAlgorithm(PublicKeyAlgorithm):
         return private, public
 
     def load_private_key(self, data: bytes) -> (PrivateKey, PublicKey):
-        private_impl = construct(self.__get_components(self.remove_key_boundary(data), 4))
+        private_impl = construct(self.__get_components(remove_key_boundary(data), 4))
         public_impl = private_impl.publickey()
 
         public = ElGamalPublicKey(public_impl)
@@ -59,12 +61,11 @@ class ElGamalAlgorithm(PublicKeyAlgorithm):
         return private, public
 
     def load_public_key(self, data: bytes) -> PublicKey:
-        public_impl = construct(self.__get_components(self.remove_key_boundary(data), 3))
+        public_impl = construct(self.__get_components(remove_key_boundary(data), 3))
         return ElGamalPublicKey(public_impl)
 
     def get_code(self) -> Code:
         return Code.ElGamal
-
 
     @staticmethod
     def __get_components(data: bytes, count: int) -> tuple:
@@ -95,15 +96,16 @@ class ElGamalPrivateKey(PrivateKey):
         block_size = self.impl.p.size_in_bytes()
         p = self.impl.p
         d = self.impl.x
-        for (r,t) in [(ciphertext[2 * i * block_size: (2 * i + 1) * block_size], ciphertext[(2 * i + 1) * block_size: (2 * i + 2) * block_size])
+        for (r, t) in [(ciphertext[2 * i * block_size: (2 * i + 1) * block_size],
+                        ciphertext[(2 * i + 1) * block_size: (2 * i + 2) * block_size])
                        for i in range(len(ciphertext) // (2 * block_size))]:
-            inv = modinv(IntegerCustom.from_bytes(r), p)
-            m = (pow(inv, d, p) * IntegerCustom.from_bytes(t)) % p
-            plaintext += IntegerCustom.to_bytes(m)
+            inv = modinv(IntegerGMP.from_bytes(r), p)
+            m = (pow(inv, d, p) * IntegerGMP.from_bytes(t)) % p
+            plaintext += IntegerGMP.to_bytes(m)
 
         return unpad(plaintext, block_size)
 
-    def get_alorithm_code(self) -> Code:
+    def get_algorithm_code(self) -> Code:
         return Code.ElGamal
 
     def __bytes__(self) -> bytes:
@@ -140,9 +142,9 @@ class ElGamalPublicKey(PublicKey):
         b = self.impl.y
         for chunk in [padded_data[i * block_size: (i + 1) * block_size] for i in range(len(padded_data) // block_size)]:
             k = random.randint(0, p - 1)
-            r = IntegerCustom.to_bytes(pow(a, k, p))
+            r = IntegerGMP(pow(a, k, p)).to_bytes(0, 'big')
             t1 = pow(b, k, p)
-            t = IntegerCustom.to_bytes((IntegerCustom.from_bytes(chunk, 'big') * t1) % p)
+            t = IntegerGMP.to_bytes((IntegerGMP.from_bytes(chunk, 'big') * t1) % p)
             ciphertext += r + t
 
         return ciphertext
@@ -153,7 +155,7 @@ class ElGamalPublicKey(PublicKey):
     def get_signature_size(self) -> int:
         return self.impl.p.size_in_bytes() * 2
 
-    def get_alorithm_code(self) -> Code:
+    def get_algorithm_code(self) -> Code:
         return Code.ElGamal
 
     def __bytes__(self) -> bytes:

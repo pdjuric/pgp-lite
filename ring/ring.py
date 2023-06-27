@@ -1,5 +1,4 @@
-from builtins import type
-from typing import TypeVar, Generic, Optional
+from typing import TypeVar, Generic
 
 from codes import Code
 from exceptions import UnknownKeyID
@@ -29,6 +28,8 @@ class Ring(Generic[RingEntry]):
             return []
 
     def add(self, entry: RingEntry):
+        if entry.public_key.get_key_ID() in self._index_by_key:
+            self.remove(entry.public_key.get_key_ID())
         self._index_by_key[entry.public_key.get_key_ID()] = entry
         bucket = self.get_by_pka_code(entry.get_pka_code())
         bucket.append(entry)

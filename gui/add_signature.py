@@ -21,14 +21,14 @@ class UI_AddSignature(QDialog):
 
     def setupUi(self, Dialog, data):
         self.setWindowTitle('Add Signature')
-        Dialog.resize(341, 261)
+        self.resize(340, 450)
         self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setGeometry(QtCore.QRect(90, 220, 161, 32))
+        self.buttonBox.setGeometry(QtCore.QRect(90, 420, 161, 32))
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
 
         self.listWidget = QtWidgets.QListWidget(Dialog)
-        self.listWidget.setGeometry(QtCore.QRect(20, 20, 301, 192))
+        self.listWidget.setGeometry(QtCore.QRect(20, 20, 300, 400))
         self.listWidget.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.listWidget.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.listWidget.setSelectionRectVisible(True)

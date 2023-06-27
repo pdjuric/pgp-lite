@@ -7,7 +7,8 @@ import traceback
 from gui.utils import open_child, back, lambda_show, lambda_w_capture
 from gui.public_key_imported_alert import UI_PublicKeyImportedAlert
 from gui.signatures import UI_Signatures
-from ring import PublicRing, import_public_entry
+from ring import PublicRing, import_public_entry, load_key_info, User
+from ring.public import Trust
 
 
 def fetch_entries() -> list:
@@ -25,8 +26,10 @@ class UI_PublicKeys(QMainWindow):
 
     def setupUi(self):
         self.setWindowTitle('Public Keys')
+        self.resize(880, 524)
         self.centralwidget = QtWidgets.QWidget(self)
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
+        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 820, 441))
 
         self.tableWidget.setColumnCount(7)
 
@@ -43,23 +46,29 @@ class UI_PublicKeys(QMainWindow):
         self.back_button.clicked.connect(lambda: back(self))
 
         def import_public_key():
-            file = QFileDialog.getOpenFileName(self, 'Choose Public Key', os.environ['HOME'])
-            if len(file[0]) == 0:
-                return
+            files = QFileDialog.getOpenFileNames(self, 'Choose Public Keys')
+            for file in files[0]:
+                def callback(name: str):
+                    user = User.get(name)
 
-            def set_trust(trust):
-                user.trust = trust
-                self.refresh()
+                    def set_trust(trust: Trust):
+                        user.trust = trust
+                        self.refresh()
 
-            try:
-                user, key_ID = import_public_entry(file[0])
-                open_child(self, UI_PublicKeyImportedAlert(self, user.ID, key_ID, user.trust, set_trust))
-                self.refresh()
-            except Exception as e:
-                traceback.print_exc()
-                QMessageBox.information(self, 'Error', str(e), QMessageBox.Ok)
+                    return set_trust
 
-        self.import_key_button = QtWidgets.QPushButton("Import Key", self.centralwidget)
+                try:
+                    user, is_private, algorithm, keys = load_key_info(file)
+                    user = User.get(user)
+                    UI_PublicKeyImportedAlert(self, user.ID, keys[1].get_key_ID(), user.trust, callback(user.ID)).show()
+                    import_public_entry(user, is_private, algorithm, keys)
+                    self.refresh()
+
+                except Exception as e:
+                    traceback.print_exc()
+                    QMessageBox.information(self, 'Error', str(e), QMessageBox.Ok)
+
+        self.import_key_button = QtWidgets.QPushButton("Import Keys", self.centralwidget)
         self.import_key_button.setGeometry(QtCore.QRect(290, 470, 181, 41))
         self.import_key_button.clicked.connect(import_public_key)
 
@@ -75,7 +84,6 @@ class UI_PublicKeys(QMainWindow):
         for i in range(5):
             self.tableWidget.horizontalHeader().setSectionResizeMode(i, QHeaderView.ResizeToContents)
 
-
     def refresh(self):
         entries = fetch_entries()
         self.tableWidget.setRowCount(0)
@@ -87,7 +95,7 @@ class UI_PublicKeys(QMainWindow):
 
         def export_key(key_ID: bytes):
             file = QFileDialog.getSaveFileName(self, 'Save Public Key')
-            if file:
+            if file and file[0] != '':
                 PublicRing.get_by_key_ID(key_ID).export(file[0] + '.pem')
 
         for idx, e in enumerate(entries):
@@ -108,13 +116,7 @@ class UI_PublicKeys(QMainWindow):
             btn.clicked.connect(lambda_show(UI_Signatures(self, e[1])))
             self.tableWidget.setCellWidget(idx, 6, btn)
 
-        self.set_width(max(self.tableWidget.width(), 500))
-
     def recalculate_legitimacies(self):
         entries = fetch_entries()
         for idx, e in enumerate(entries):
             self.tableWidget.item(idx, 3).setText('legitimate' if e[3] else 'not legitimate')
-
-    def set_width(self, width: int):
-        self.resize(60 + width, 524)
-        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 20 + width, 441))

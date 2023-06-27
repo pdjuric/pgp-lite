@@ -18,31 +18,26 @@ class UI_Signatures(QDialog):
         self.setupUi()
         self.refresh()
 
-    def set_width(self, width: int):
-        self.resize(60 + width, 524)
-        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 20 + width, 441))
-
-
     def setupUi(self):
         self.setWindowTitle('Signatures')
-        self.resize(340, 262)
+        self.resize(340, 450)
         self.tableWidget = QTableWidget(self)
-        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 301, 192))
         self.tableWidget.setColumnCount(2)
+        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 300, 400))
 
         self.tableWidget.setHorizontalHeaderItem(0, QTableWidgetItem('User'))
         self.tableWidget.setHorizontalHeaderItem(1, QTableWidgetItem('Trust'))
 
         self.add_signature_button = QPushButton('Add Signature', self)
-        self.add_signature_button.setGeometry(QtCore.QRect(50, 220, 113, 32))
+        self.add_signature_button.setGeometry(QtCore.QRect(50, 420, 113, 32))
         self.add_signature_button.clicked.connect(lambda: UI_AddSignature(self, self.key_ID).show())
 
         def update_legitimacies():
-            self.parent.recalc_legitimacies()
+            self.parent.recalculate_legitimacies()
             self.hide()
 
         self.ok_button = QPushButton('OK', self)
-        self.ok_button.setGeometry(QtCore.QRect(180, 220, 113, 32))
+        self.ok_button.setGeometry(QtCore.QRect(180, 420, 113, 32))
         self.ok_button.clicked.connect(update_legitimacies)
 
         self.tableWidget.verticalHeader().setVisible(False)
@@ -51,7 +46,6 @@ class UI_Signatures(QDialog):
         self.tableWidget.horizontalHeader().setVisible(True)
         self.tableWidget.horizontalHeader().setHighlightSections(False)
         self.tableWidget.setSelectionMode(QAbstractItemView.NoSelection)
-
 
     def refresh(self):
         entries = fetch_entries(self.key_ID)
@@ -62,4 +56,3 @@ class UI_Signatures(QDialog):
             self.tableWidget.setItem(idx, 0, QTableWidgetItem(e[0]))
             self.tableWidget.setItem(idx, 1, QTableWidgetItem(str(e[1])))
 
-        self.set_width(max(self.tableWidget.width(), 300))

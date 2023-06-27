@@ -23,4 +23,4 @@ class AuthenticationStep(Step):
         message.prepend(timestamp.to_bytes(length=4, byteorder='big'))
 
     def get_code(self) -> Code:
-        return Code.Signed | self.private_key.get_alorithm_code()
+        return Code.Signed | self.private_key.get_algorithm_code()

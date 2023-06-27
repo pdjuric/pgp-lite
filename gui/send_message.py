@@ -8,6 +8,7 @@ from encryption.compression_step import CompressionStep
 from encryption.encryption_step import EncryptionStep
 from encryption.input_step import InputStep
 from exceptions import PrivateKeyDecryptionError
+from gui.utils import back
 from message import Message
 from ring import PrivateRing, PublicRing
 from ske import AES128
@@ -20,7 +21,6 @@ class UI_SendMessage(QMainWindow):
         super().__init__(parent)
         self.parent = parent
         self.setupUi(self)
-
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("SendMessage")
@@ -136,12 +136,16 @@ class UI_SendMessage(QMainWindow):
         self.send_button.setObjectName("sendButton")
         MainWindow.setCentralWidget(self.centralwidget)
 
+        self.back_button = QtWidgets.QPushButton('Back', self.centralwidget)
+        self.back_button.setGeometry(QtCore.QRect(30, 340, 113, 32))
+        self.back_button.clicked.connect(lambda: back(self))
+        MainWindow.setCentralWidget(self.centralwidget)
+
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.send_button.clicked.connect(self.send)
-
 
     def signature_state_changed(self):
         signature_state = self.signature_check_box.isChecked()
@@ -149,7 +153,6 @@ class UI_SendMessage(QMainWindow):
         self.dsa_radio_button.setEnabled(signature_state)
         self.private_key_list.setEnabled(signature_state)
         self.passphrase_field.setEnabled(signature_state)
-
 
     def encrypt_state_changed(self):
         encrypt_state = self.encrypt_check_box.isChecked()
@@ -159,20 +162,17 @@ class UI_SendMessage(QMainWindow):
         self.tdes_radio_button.setEnabled(encrypt_state)
         self.public_key_list.setEnabled(encrypt_state)
 
-
-    def set_private_keys(self, code:Code):
+    def set_private_keys(self, code: Code):
         self.private_key_list.clear()
         for entry in PrivateRing.get_by_pka_code(code):
             item = QtWidgets.QListWidgetItem(entry.user + " [" + entry.public_key.get_key_ID().hex() + "]")
             self.private_key_list.addItem(item)
 
-
-    def set_public_keys(self, code:Code):
+    def set_public_keys(self, code: Code):
         self.public_key_list.clear()
         for entry in PublicRing.get_by_pka_code(code):
-            item = QtWidgets.QListWidgetItem(entry.user + " [" + entry.public_key.get_key_ID().hex() + "]")
+            item = QtWidgets.QListWidgetItem(entry.user.ID + " [" + entry.public_key.get_key_ID().hex() + "]")
             self.public_key_list.addItem(item)
-
 
     def send(self):
         msg = self.plaintext_field.toPlainText()
@@ -225,7 +225,7 @@ class UI_SendMessage(QMainWindow):
                                                QMessageBox.Cancel)
                     return
             else:
-                ret = QMessageBox.question(self, 'Alert', "Symetric key algorithm must be selected",
+                ret = QMessageBox.question(self, 'Alert', "Symmetric key algorithm must be selected",
                                            QMessageBox.Cancel,
                                            QMessageBox.Cancel)
                 return
@@ -235,14 +235,14 @@ class UI_SendMessage(QMainWindow):
 
         if self.encrypt_check_box.isChecked() and self.signature_check_box.isChecked():
             if not ((self.rsa_radio_button.isChecked() and self.rsa1_radio_button.isChecked())
-                or (self.dsa_radio_button.isChecked() and self.elgamal_radio_button)):
-                ret = QMessageBox.question(self, 'Alert', "Only cobinations RSA&RSA and DSA&Elgamal are supported",
+                    or (self.dsa_radio_button.isChecked() and self.elgamal_radio_button.isChecked())):
+                ret = QMessageBox.question(self, 'Alert', "Only combinations RSA&RSA and DSA&Elgamal are supported",
                                            QMessageBox.Cancel,
                                            QMessageBox.Cancel)
                 return
         file = QFileDialog.getSaveFileName(self, 'Save Message')
-        if file:
-            with open(file[0]+'.txt', 'wb') as file:
+        if file and file[0] != '':
+            with open(file[0] + '.txt', 'wb') as file:
                 file.write(message.get_bytes(0))
             self.parent.show()
             self.hide()
@@ -262,11 +262,12 @@ class UI_SendMessage(QMainWindow):
         self.pke_label.setText(_translate("MainWindow", "Public Key Algorithm:"))
         self.encrypt_check_box.setText(_translate("MainWindow", "Enable"))
         self.rsa1_radio_button.setText(_translate("MainWindow", "RSA"))
-        self.ske_label.setText(_translate("MainWindow", "Symetric Key Algorithm:"))
+        self.ske_label.setText(_translate("MainWindow", "Symmetric Key Algorithm:"))
         self.elgamal_radio_button.setText(_translate("MainWindow", "El Gamal"))
         self.aes_radio_button.setText(_translate("MainWindow", "AES128"))
         self.tdes_radio_button.setText(_translate("MainWindow", "TripleDes"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.encrypt_tab), _translate("MainWindow", "Encrypt"))
         self.convert_check_box.setText(_translate("MainWindow", "Enable"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.convert_tab), _translate("MainWindow", "Convert to radix64"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.convert_tab),
+                                  _translate("MainWindow", "Convert to radix64"))
         self.send_button.setText(_translate("MainWindow", "Send"))

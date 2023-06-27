@@ -1,4 +1,3 @@
-import os
 import traceback
 
 from PyQt5 import QtCore, QtWidgets
@@ -8,7 +7,7 @@ from exceptions import PrivateKeyDecryptionError
 from gui.utils import open_child, lambda_w_capture, back
 from gui.password_prompt import UI_PasswordPrompt
 from gui.generate_key import UI_GenerateKey
-from ring import PrivateRing, import_private_entry
+from ring import PrivateRing, import_private_entry, load_key_info
 
 
 def fetch_entries() -> list:
@@ -26,8 +25,10 @@ class UI_PrivateKeys(QMainWindow):
 
     def setupUi(self):
         self.setWindowTitle('Private Keys')
+        self.resize(880, 524)
         self.centralwidget = QtWidgets.QWidget(self)
         self.tableWidget = QtWidgets.QTableWidget(self.centralwidget)
+        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 820, 441))
 
         self.tableWidget.setColumnCount(5)
 
@@ -38,7 +39,7 @@ class UI_PrivateKeys(QMainWindow):
         self.tableWidget.setHorizontalHeaderItem(4, QTableWidgetItem(""))
 
         self.generate_key_button = QtWidgets.QPushButton('Generate Key', self.centralwidget)
-        self.generate_key_button.setGeometry(QtCore.QRect(150, 470, 181, 41))
+        self.generate_key_button.setGeometry(QtCore.QRect(240, 470, 181, 41))
         self.generate_key_button.clicked.connect(lambda: open_child(self, UI_GenerateKey()))
 
         self.back_button = QtWidgets.QPushButton('Back', self.centralwidget)
@@ -46,36 +47,34 @@ class UI_PrivateKeys(QMainWindow):
         self.back_button.clicked.connect(lambda: back(self))
 
         def import_private_key():
-            file = QFileDialog.getOpenFileName(self, 'Choose Private Key', os.environ['HOME'])
-            if len(file[0]) == 0:
-                return
+            files = QFileDialog.getOpenFileNames(self, 'Choose Private Keys')
+            for file in files[0]:
+                def save_passphrase(x):
+                    self.passphrase = bytes(x, 'utf-8')
+                    return True
 
-            def save_passphrase(x):
-                self.passphrase = bytes(x, 'utf-8')
-                return True
+                try:
+                    user, is_private, algorithm, keys = load_key_info(file)
+                    p = UI_PasswordPrompt(self, user + " [" + keys[1].get_key_ID().hex() + "]", lambda x: save_passphrase(x))
+                    p.exec_()
 
-            p = UI_PasswordPrompt(self, '', lambda x: save_passphrase(x))
-            p.exec_()
+                    if not self.passphrase:
+                        return
 
-            if not self.passphrase:
-                return
+                    import_private_entry(user, is_private, algorithm, keys, self.passphrase)
+                    self.refresh()
 
-            try:
-                import_private_entry(file[0], self.passphrase)
-                self.refresh()
-            except Exception as e:
-                traceback.print_exc()
-                QMessageBox.information(self, 'Error', str(e), QMessageBox.Ok)
+                except Exception as e:
+                    traceback.print_exc()
+                    QMessageBox.information(self, 'Error', str(e), QMessageBox.Ok)
 
-        self.import_key_button = QtWidgets.QPushButton('Import Key', self.centralwidget)
-        self.import_key_button.setGeometry(QtCore.QRect(350, 470, 181, 41))
+        self.import_key_button = QtWidgets.QPushButton('Import Keys', self.centralwidget)
+        self.import_key_button.setGeometry(QtCore.QRect(450, 470, 181, 41))
         self.import_key_button.clicked.connect(import_private_key)
 
         self.setCentralWidget(self.centralwidget)
 
         self.tableWidget.verticalHeader().setVisible(False)
-        self.tableWidget.verticalHeader().setHighlightSections(False)
-        self.tableWidget.setSortingEnabled(False)
         self.tableWidget.horizontalHeader().setVisible(True)
         self.tableWidget.horizontalHeader().setHighlightSections(False)
         self.tableWidget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
@@ -94,17 +93,17 @@ class UI_PrivateKeys(QMainWindow):
 
         def export_public_key(key_ID: bytes):
             file = QFileDialog.getSaveFileName(self, 'Save Public Key')
-            if file:
+            if file and file[0] != '':
                 PrivateRing.get_by_key_ID(key_ID).export_public(file[0] + '.pem')
 
         def export_private_key(key_ID: bytes):
             entry = PrivateRing.get_by_key_ID(key_ID)
             print(entry.user)
 
-            def f(p):
+            def f(passphrase):
                 try:
-                    PrivateRing.get_by_key_ID(key_ID).get_private_key(bytes(p, 'utf-8'))
-                    self.passphrase = bytes(p, 'utf-8')
+                    PrivateRing.get_by_key_ID(key_ID).get_private_key(bytes(passphrase, 'utf-8'))
+                    self.passphrase = bytes(passphrase, 'utf-8')
                     return True
                 except PrivateKeyDecryptionError:
                     self.passphrase = None
@@ -118,10 +117,9 @@ class UI_PrivateKeys(QMainWindow):
                 return
 
             file = QFileDialog.getSaveFileName(self, 'Save Private Key')
-            if file:
+            if file[0] != '':
                 print(self.passphrase)
                 PrivateRing.get_by_key_ID(key_ID).export(file[0] + '.pem', self.passphrase)
-
 
         for idx, e in enumerate(entries):
             self.tableWidget.setItem(idx, 0, QTableWidgetItem(e[0]))
@@ -138,9 +136,3 @@ class UI_PrivateKeys(QMainWindow):
             btn = QPushButton('export public', self.tableWidget)
             btn.clicked.connect(lambda_w_capture(export_public_key, e[1]))
             self.tableWidget.setCellWidget(idx, 4, btn)
-
-        self.set_width(max(self.tableWidget.width(), 500))
-
-    def set_width(self, width: int):
-        self.resize(60 + width, 524)
-        self.tableWidget.setGeometry(QtCore.QRect(20, 20, 20 + width, 441))

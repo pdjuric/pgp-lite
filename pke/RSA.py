@@ -57,7 +57,7 @@ class RSAPrivateKey(PrivateKey):
         except (ValueError, TypeError) as e:
             raise DecryptionError(e)
 
-    def get_alorithm_code(self) -> Code:
+    def get_algorithm_code(self) -> Code:
         return Code.RSA
 
     def __bytes__(self) -> bytes:
@@ -87,7 +87,7 @@ class RSAPublicKey(PublicKey):
     def get_signature_size(self) -> int:
         return self.impl.size_in_bytes()
 
-    def get_alorithm_code(self) -> Code:
+    def get_algorithm_code(self) -> Code:
         return Code.RSA
 
     def __bytes__(self) -> bytes:

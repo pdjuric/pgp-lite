@@ -21,7 +21,7 @@ class DecryptionStep(Step):
         encrypted_session_key = message.get_bytes(private_key_entry.public_key.get_signature_size())
         Step.logger.info("Private key found - using key {}.".format(public_key_ID.hex()))
 
-        from gui.main_window import enter_password
+        from gui.password_prompt import enter_password
         enter_password(self.set_password)
 
         private_key = private_key_entry.get_private_key(bytes(self.password, 'utf-8'))

@@ -31,7 +31,7 @@ class PrivateKey(ABC, SupportsBytes):
         return self.key_ID
 
     @abstractmethod
-    def get_alorithm_code(self) -> Code:
+    def get_algorithm_code(self) -> Code:
         pass
 
 
@@ -54,7 +54,7 @@ class PublicKey(ABC, SupportsBytes):
         pass
 
     @abstractmethod
-    def get_alorithm_code(self) -> Code:
+    def get_algorithm_code(self) -> Code:
         pass
 
 

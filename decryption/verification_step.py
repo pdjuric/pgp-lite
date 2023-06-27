@@ -21,7 +21,7 @@ class VerificationStep(Step):
         Step.logger.info("Public key found - key id = {}.".format(public_key_ID.hex()))
 
         info_str = 'User: {}. Signing time: {}.'\
-            .format(public_key_entry.user, datetime.fromtimestamp(int.from_bytes(timestamp, 'big')))
+            .format(public_key_entry.user.ID, datetime.fromtimestamp(int.from_bytes(timestamp, 'big')))
 
         if public_key_entry.get_key_legitimacy():
             Step.logger.info("{} Key legitimate!".format(info_str))
